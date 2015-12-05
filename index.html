@@ -10,10 +10,19 @@
             canvasApp();
         }
         function canvasApp() {
-            var scrollXSpeed = 0;
-            var scrollYSpeed = 0;
+            theCanvas = document.getElementById("canvasOne");
+            context = theCanvas.getContext("2d");
+
             var maxSpeed = 7;
             var acceleration = .2;
+
+            var ball = {
+                xSpeed:0,
+                ySpeed:0,
+                xPos: 0,
+                yPos: 0,
+                size: 30
+            };
 
             var world = {
                 width: 12000,
@@ -22,19 +31,19 @@
 
             $(window).keypress(function (keyPress) {
                 if (keyPress.key === 'ArrowLeft') {
-                    scrollYSpeed = Math.min(maxSpeed, scrollYSpeed + acceleration);
+                    ball.ySpeed = Math.min(maxSpeed, ball.ySpeed + acceleration);
                 }
                 if (keyPress.key === 'ArrowRight') {
-                    scrollYSpeed = Math.max(-maxSpeed, scrollYSpeed - acceleration);
+                    ball.ySpeed = Math.max(-maxSpeed, ball.ySpeed - acceleration);
                 }
                 if (keyPress.key === 'ArrowUp') {
-                    scrollXSpeed = Math.min(maxSpeed, scrollXSpeed + acceleration);
+                    ball.xSpeed = Math.min(maxSpeed, ball.xSpeed + acceleration);
                 }
                 if (keyPress.key === 'ArrowDown') {
-                    scrollXSpeed = Math.max(-maxSpeed, scrollXSpeed - acceleration);
+                    ball.xSpeed = Math.max(-maxSpeed, ball.xSpeed - acceleration);
                 }
-                $("#xScrollSpeed").text(scrollXSpeed.toFixed(2));
-                $("#yScrollSpeed").text(scrollYSpeed.toFixed(2));
+                $("#xScrollSpeed").text(ball.xSpeed.toFixed(2));
+                $("#yScrollSpeed").text(ball.ySpeed.toFixed(2));
 
             });
 
@@ -51,26 +60,17 @@
             var speed = 2;
             var angle = 380;
 
-            theCanvas = document.getElementById("canvasOne");
             grid = {
                 spacing: 80,
                 width: theCanvas.width - 2,
                 height: theCanvas.height - 2,
-                offset: {x: 0, y: 0},
+                offset: {xPos: 0, yPos: 0},
                 calculateGridlineOffset: function (xScrollSpeed, yScrollSpeed) {
-                    this.offset = {
-                        x: (xScrollSpeed + this.offset.x) % this.spacing,
-                        y: (yScrollSpeed + this.offset.y) % this.spacing
-                    };
+                    this.offset.xPos = (xScrollSpeed + this.offset.xPos) % this.spacing;
+                    this.offset.yPos = (yScrollSpeed + this.offset.yPos) % this.spacing;
                 }
             };
 
-            context = theCanvas.getContext("2d");
-            var ball = {
-                x: 0,
-                y: 0,
-                size: 30
-            };
 
             setInterval(drawScreen, 10);
 
@@ -78,31 +78,32 @@
                 pen.strokeStyle = "gray";
                 pen.spacing = .1;
 
-                grid.calculateGridlineOffset(scrollXSpeed, scrollYSpeed);
+                grid.calculateGridlineOffset(ball.xSpeed, ball.ySpeed);
 
 
-                for (var i = grid.offset.x; i < grid.height; i = i + grid.spacing) {
+                for (var i = grid.offset.xPos; i < grid.height; i = i + grid.spacing) {
                     drawHorizontalLine(pen, i);
                 }
-                for (var i = grid.offset.y; i < grid.width; i = i + grid.spacing) {
+                for (var i = grid.offset.yPos; i < grid.width; i = i + grid.spacing) {
                     drawVerticalLine(pen, i);
                 }
 
-                function drawHorizontalLine(pen, height) {
-                    pen.beginPath();
-                    pen.moveTo(0, height);
-                    pen.lineTo(grid.width, height);
-                    pen.stroke();
-                    pen.closePath();
-                }
+            }
 
-                function drawVerticalLine(pen, width) {
-                    pen.beginPath();
-                    pen.moveTo(width, 0);
-                    pen.lineTo(width, grid.height);
-                    pen.stroke();
-                    pen.closePath();
-                }
+            function drawHorizontalLine(pen, height) {
+                pen.beginPath();
+                pen.moveTo(0, height);
+                pen.lineTo(grid.width, height);
+                pen.stroke();
+                pen.closePath();
+            }
+
+            function drawVerticalLine(pen, width) {
+                pen.beginPath();
+                pen.moveTo(width, 0);
+                pen.lineTo(width, grid.height);
+                pen.stroke();
+                pen.closePath();
             }
 
             function drawTheCanvas(pen) {
@@ -116,16 +117,16 @@
             }
 
             function drawBall(pen) {
-                ball.x = ball.x + scrollXSpeed;
-                ball.y = ball.y + scrollYSpeed;
+                ball.xPos = ball.xPos + ball.xSpeed;
+                ball.yPos = ball.yPos + ball.ySpeed;
                 pen.fillStyle = "purple";
                 pen.beginPath();
                 pen.arc(grid.width / 2, grid.height / 2, ball.size, 0, Math.PI * 2, true);
                 pen.closePath();
                 pen.fill();
 
-                $("#xPos").text(ball.x.toFixed(0));
-                $("#yPos").text(ball.y.toFixed(0));
+                $("#xPos").text(ball.xPos.toFixed(0));
+                $("#yPos").text(ball.yPos.toFixed(0));
 
             }
         }
