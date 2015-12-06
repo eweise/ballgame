@@ -16,11 +16,16 @@
             var maxSpeed = 7;
             var acceleration = 1;
 
+            var world = {
+                height: 8000,
+                width: 8000
+            };
+
             var ball = {
                 xSpeed: 0,
                 ySpeed: 0,
-                xPos: 0,
-                yPos: 0,
+                xPos: world.width / 2,
+                yPos: world.height / 2,
                 size: 20
             };
 
@@ -32,9 +37,9 @@
                 var newBall = {
                     xSpeed: 0,
                     ySpeed: 0,
-                    xPos: (Math.random() * 800).toFixed(0),
-                    yPos: (Math.random() * 1200).toFixed(0),
-                    size: (Math.random() * 80).toFixed(0),
+                    xPos: Math.floor((Math.random() * world.width)),
+                    yPos: Math.floor((Math.random() * world.height).toFixed(0)),
+                    size: Math.floor((Math.random() * 80).toFixed(0)),
                     color: randomColor()
                 }
                 otherBalls[counter] = newBall;
@@ -42,16 +47,16 @@
 
             $(window).keypress(function (keyPress) {
                 if (keyPress.key === 'ArrowLeft') {
-                    ball.ySpeed = Math.min(maxSpeed, ball.ySpeed + acceleration);
+                    ball.xSpeed = Math.min(maxSpeed, ball.xSpeed - acceleration);
                 }
                 if (keyPress.key === 'ArrowRight') {
-                    ball.ySpeed = Math.max(-maxSpeed, ball.ySpeed - acceleration);
+                    ball.xSpeed = Math.max(-maxSpeed, ball.xSpeed + acceleration);
                 }
                 if (keyPress.key === 'ArrowUp') {
-                    ball.xSpeed = Math.min(maxSpeed, ball.xSpeed + acceleration);
+                    ball.ySpeed = Math.min(maxSpeed, ball.ySpeed - acceleration);
                 }
                 if (keyPress.key === 'ArrowDown') {
-                    ball.xSpeed = Math.max(-maxSpeed, ball.xSpeed - acceleration);
+                    ball.ySpeed = Math.max(-maxSpeed, ball.ySpeed + acceleration);
                 }
                 $("#xScrollSpeed").text(ball.xSpeed.toFixed(2));
                 $("#yScrollSpeed").text(ball.ySpeed.toFixed(2));
@@ -73,21 +78,14 @@
                 drawOtherBalls(context);
             }
 
-            var speed = 2;
-            var angle = 380;
-
             grid = {
-                boundary: {
-                    width: 12000,
-                    height: 8000
-                },
                 spacing: 80,
                 width: theCanvas.width - 2,
                 height: theCanvas.height - 2,
                 offset: {xPos: 0, yPos: 0},
                 calculateGridlineOffset: function (xScrollSpeed, yScrollSpeed) {
-                    this.offset.xPos = (xScrollSpeed + this.offset.xPos) % this.spacing;
-                    this.offset.yPos = (yScrollSpeed + this.offset.yPos) % this.spacing;
+                    this.offset.xPos = (-xScrollSpeed + this.offset.xPos) % this.spacing;
+                    this.offset.yPos = (-yScrollSpeed + this.offset.yPos) % this.spacing;
                 }
             };
 
@@ -99,15 +97,10 @@
 
                 grid.calculateGridlineOffset(ball.xSpeed, ball.ySpeed);
 
-                for (var i = grid.offset.xPos; i < grid.height; i = i + grid.spacing) {
-                    if ((i + ball.xPos) < grid.boundary.height) {
-                        drawHorizontalLine(pen, i);
-                    }
-                    else {
-                        console.log("hit boundary");
-                    }
+                for (var i = grid.offset.yPos; i < grid.height; i = i + grid.spacing) {
+                    drawHorizontalLine(pen, i);
                 }
-                for (var i = grid.offset.yPos; i < grid.width; i = i + grid.spacing) {
+                for (var i = grid.offset.xPos; i < grid.width; i = i + grid.spacing) {
                     drawVerticalLine(pen, i);
                 }
             }
@@ -162,17 +155,16 @@
                 var arrayLength = otherBalls.length;
                 for (var i = 0; i < arrayLength; i++) {
                     var balli = otherBalls[i];
-                    var xSpeed = ball.xSpeed;
 
-                    // why did the x and x pos change to a string? fricken javascript
-                    balli.xPos = parseInt(balli.xPos) + ball.xSpeed;
-                    balli.yPos = parseInt(balli.yPos) + ball.ySpeed;
+                    var gridXPos = (balli.xPos - (ball.xPos)) + (grid.width / 2);
+                    var gridYPos = (balli.yPos - (ball.yPos)) + (grid.height / 2);
                     pen.fillStyle = balli.color;
                     pen.beginPath();
-                    pen.arc(balli.yPos, balli.xPos, balli.size, 0, Math.PI * 2, true);
+                    pen.arc(gridXPos, gridYPos, balli.size, 0, Math.PI * 2, true);
                     pen.closePath();
                     pen.fill();
-
+                    $("#enemyXPos").text(balli.xPos);
+                    $("#enemyYPos").text(balli.yPos);
                 }
             }
 
@@ -190,7 +182,12 @@
                 var distance = Math.sqrt(dx * dx + dy * dy);
 
                 if (distance < ball1.size + ball2.size) {
-                    console.log("ball 1 collided with ball 2");
+                    alert("dx=" + dx + " dy="
+                          + dy + "distance=" + distance + "ball1.size = " + ball1.size + " ball1.xPos = " + ball1.xPos + " ball1YPos = " + ball1.yPos
+                          + " ball2.xPos = "
+                          + "ball2.size=" + ball2.size + ball2.xPos + " ball2.yPos = " + ball2.yPos
+                    )
+                    ;
                 }
             }
 
@@ -221,6 +218,14 @@
             <tr>
                 <td>Y Position</td>
                 <td><span id="yPos">0</span></td>
+            </tr>
+            <tr>
+                <td>Enemy Ball 1 X Position</td>
+                <td><span id="enemyXPos">0</span></td>
+            </tr>
+            <tr>
+                <td>Enemy Ball Y Position</td>
+                <td><span id="enemyYPos">0</span></td>
             </tr>
         </table>
     </div>
