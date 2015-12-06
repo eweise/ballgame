@@ -24,21 +24,21 @@
                 size: 20
             };
 
-            var otherBallsSize = 20;
+            var otherBallsTotal = 1;
 
             var otherBalls = [];
 
-            for(var counter = 0; counter < otherBallsSize; counter++ ) {
-              var newBall = {
-                xSpeed: 0,
-                ySpeed: 0,
-                xPos: (Math.random() * 800).toFixed(0),
-                yPos: (Math.random() * 1200).toFixed(0),
-                size: (Math.random() * 50).toFixed(0)
-              }
-              otherBalls[counter] = newBall;
+            for (var counter = 0; counter < otherBallsTotal; counter++) {
+                var newBall = {
+                    xSpeed: 0,
+                    ySpeed: 0,
+                    xPos: (Math.random() * 800).toFixed(0),
+                    yPos: (Math.random() * 1200).toFixed(0),
+                    size: (Math.random() * 80).toFixed(0),
+                    color: randomColor()
+                }
+                otherBalls[counter] = newBall;
             }
-
 
             $(window).keypress(function (keyPress) {
                 if (keyPress.key === 'ArrowLeft') {
@@ -59,6 +59,9 @@
             });
 
             function drawScreen() {
+
+                detectBallCollision();
+
                 drawTheCanvas(context);
 
                 drawBorder(context);
@@ -97,7 +100,7 @@
                 grid.calculateGridlineOffset(ball.xSpeed, ball.ySpeed);
 
                 for (var i = grid.offset.xPos; i < grid.height; i = i + grid.spacing) {
-                    if((i + ball.xPos) < grid.boundary.height) {
+                    if ((i + ball.xPos) < grid.boundary.height) {
                         drawHorizontalLine(pen, i);
                     }
                     else {
@@ -106,6 +109,13 @@
                 }
                 for (var i = grid.offset.yPos; i < grid.width; i = i + grid.spacing) {
                     drawVerticalLine(pen, i);
+                }
+            }
+
+            function detectBallCollision() {
+                var arrayLength = otherBalls.length;
+                for (var i = 0; i < arrayLength; i++) {
+                    didCollide(ball, otherBalls[i]);
                 }
             }
 
@@ -149,19 +159,41 @@
             }
 
             function drawOtherBalls(pen) {
-              var arrayLength = otherBalls.length;
-              for (var i = 0; i < arrayLength; i++) {
-                var balli = otherBalls[i];
-                var xSpeed = ball.xSpeed;
-                balli.xPos = parseInt(balli.xPos) + ball.xSpeed;
-                balli.yPos = parseInt(balli.yPos) + ball.ySpeed;
-                pen.fillStyle = "green";
-                pen.beginPath();
-                pen.arc(balli.yPos, balli.xPos, balli.size, 0, Math.PI * 2, true);
-                pen.closePath();
-                pen.fill();
-              }
+                var arrayLength = otherBalls.length;
+                for (var i = 0; i < arrayLength; i++) {
+                    var balli = otherBalls[i];
+                    var xSpeed = ball.xSpeed;
+
+                    // why did the x and x pos change to a string? fricken javascript
+                    balli.xPos = parseInt(balli.xPos) + ball.xSpeed;
+                    balli.yPos = parseInt(balli.yPos) + ball.ySpeed;
+                    pen.fillStyle = balli.color;
+                    pen.beginPath();
+                    pen.arc(balli.yPos, balli.xPos, balli.size, 0, Math.PI * 2, true);
+                    pen.closePath();
+                    pen.fill();
+
+                }
             }
+
+            function randomColor() {
+                var r = (Math.random() * 256).toFixed(0);
+                var g = (Math.random() * 256).toFixed(0);
+                var b = (Math.random() * 256).toFixed(0);
+                return "rgb(" + r + "," + g + "," + b + ")";
+            }
+
+            function didCollide(ball1, ball2) {
+
+                var dx = ball1.xPos - ball2.xPos;
+                var dy = ball1.yPos - ball2.yPos;
+                var distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < ball1.size + ball2.size) {
+                    console.log("ball 1 collided with ball 2");
+                }
+            }
+
         }
     </script>
 </head>
