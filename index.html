@@ -29,7 +29,7 @@
                 size: 20
             };
 
-            var otherBallsTotal = 1;
+            var otherBallsTotal = 5000;
 
             var otherBalls = [];
 
@@ -108,7 +108,15 @@
             function detectBallCollision() {
                 var arrayLength = otherBalls.length;
                 for (var i = 0; i < arrayLength; i++) {
-                    didCollide(ball, otherBalls[i]);
+                    if(didCollide(ball, otherBalls[i])) {
+                        if(ball.size < otherBalls[i].size) {
+                            alert("G A M E   O V E R");
+                        }
+                        if(ball.size > otherBalls[i].size) {
+                            ball.size = ball.size + Math.sqrt(otherBalls[i].size);
+                            otherBalls[i].size = 0;
+                        }
+                    };
                 }
             }
 
@@ -181,14 +189,7 @@
                 var dy = ball1.yPos - ball2.yPos;
                 var distance = Math.sqrt(dx * dx + dy * dy);
 
-                if (distance < ball1.size + ball2.size) {
-                    alert("dx=" + dx + " dy="
-                          + dy + "distance=" + distance + "ball1.size = " + ball1.size + " ball1.xPos = " + ball1.xPos + " ball1YPos = " + ball1.yPos
-                          + " ball2.xPos = "
-                          + "ball2.size=" + ball2.size + ball2.xPos + " ball2.yPos = " + ball2.yPos
-                    )
-                    ;
-                }
+                return (distance < ball1.size + ball2.size);
             }
 
         }
